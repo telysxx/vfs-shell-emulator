@@ -1,0 +1,11 @@
+# Stage 3: all commands of stages 1-3 and their error handling.
+ls
+cd /home
+pwd
+tree
+tree /
+tree /no/such/dir
+pwd extra
+cd a b
+unknown
+exit

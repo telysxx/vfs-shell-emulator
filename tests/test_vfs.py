@@ -1,0 +1,55 @@
+"""Tests for the in-memory virtual file system."""
+
+import unittest
+from pathlib import Path
+
+from vfs import VFS, VFSError
+
+EXAMPLES = Path(__file__).resolve().parent.parent / "vfs_examples"
+
+
+def load(name: str) -> VFS:
+    """Load one of the example VFS files."""
+    return VFS.from_json(str(EXAMPLES / f"{name}.json"))
+
+
+class LoadingTest(unittest.TestCase):
+    """Loading from JSON and path handling."""
+
+    def test_name_comes_from_file(self):
+        """The VFS name is the JSON file name without extension."""
+        self.assertEqual(load("minimal").name, "minimal")
+
+    def test_base64_is_decoded(self):
+        """File content is stored as bytes."""
+        vfs = load("multiple_files")
+        node = vfs.resolve("/home/student/notes.txt")
+        self.assertEqual(node.content, b"UNIX-like shell emulator\n")
+
+    def test_normalize_relative_and_parent(self):
+        """Dots and double dots are resolved inside the VFS."""
+        vfs = load("multiple_files")
+        result = vfs.normalize_path("../x", "/home/student")
+        self.assertEqual(result, "/home/x")
+        self.assertEqual(vfs.normalize_path("../../../..", "/a"), "/")
+
+    def test_resolve_parent_of_cwd(self):
+        """'..' is a real parent, not the current directory."""
+        vfs = load("multiple_files")
+        names = [n.name for n in vfs.list_dir("..", "/home/student")]
+        self.assertEqual(names, ["student", "guest.txt"])
+
+    def test_missing_path(self):
+        """Unknown paths raise VFSError."""
+        with self.assertRaises(VFSError):
+            load("minimal").resolve("/nope")
+
+    def test_tree_has_three_levels(self):
+        """The deep example contains nested directories."""
+        text = load("deep_tree").tree("/")
+        self.assertIn("target.txt", text)
+        self.assertEqual(text.splitlines()[0], "/")
+
+
+if __name__ == "__main__":
+    unittest.main()

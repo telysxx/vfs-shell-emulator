@@ -1,13 +1,13 @@
-"""Entry point of the VFS shell emulator (stage 2)."""
+"""Entry point of the VFS shell emulator."""
 
 import argparse
 import json
 import os
 import sys
-from pathlib import Path
 
 from config import build_config
 from shell import Shell
+from vfs import VFS, VFSError
 
 EXIT_OK = 0
 EXIT_ERROR = 1
@@ -42,14 +42,13 @@ def main(argv: list[str] | None = None) -> int:
     try:
         config = build_config(parse_cli(argv))
         print_debug_config(config)
-        vfs_name = Path(config["vfs_path"]).stem
-        shell = Shell(vfs_name, config["prompt"])
+        shell = Shell(VFS.from_json(config["vfs_path"]), config["prompt"])
         if config["startup_script"]:
             if not shell.run_script(config["startup_script"]):
                 return EXIT_OK
         shell.repl()
         return EXIT_OK
-    except (OSError, ValueError, json.JSONDecodeError) as exc:
+    except (OSError, ValueError, VFSError, json.JSONDecodeError) as exc:
         print(f"Startup error: {exc}", file=sys.stderr)
         return EXIT_ERROR
     except KeyboardInterrupt:

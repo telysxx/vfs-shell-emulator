@@ -2,29 +2,28 @@
 
 from pathlib import Path
 
-from commands import COMMANDS, CommandError, CommandFunction
+from commands import COMMANDS, CommandError, CommandFunction, Session
 from line_parser import parse_command
+from vfs import VFS, VFSError
 
 COMMENT_PREFIX = "#"
-ROOT_PATH = "/"
 EXIT_COMMAND = "exit"
 
 
 class Shell:
-    """A UNIX-like shell; commands are stubs at this stage."""
+    """A UNIX-like shell working on an in-memory VFS."""
 
-    def __init__(self, vfs_name: str, prompt_template: str):
+    def __init__(self, vfs: VFS, prompt_template: str):
         """Create a shell; the template may use ``{vfs}`` and ``{cwd}``."""
-        self.vfs_name = vfs_name
-        self.cwd = ROOT_PATH
+        self.session = Session(vfs)
         self.prompt_template = prompt_template
 
     @property
     def prompt(self) -> str:
         """Return the prompt with the VFS name and directory filled in."""
         return self.prompt_template.replace(
-            "{vfs}", self.vfs_name
-        ).replace("{cwd}", self.cwd)
+            "{vfs}", self.session.vfs.name
+        ).replace("{cwd}", self.session.cwd)
 
     def execute_line(self, line: str) -> bool:
         """Execute one line; return False when the shell must exit."""
@@ -48,12 +47,12 @@ class Shell:
     def _run_handler(self, handler: CommandFunction, args: list[str]) -> None:
         """Run a command and report its errors without stopping."""
         try:
-            output = handler(args)
-        except CommandError as exc:
+            output = handler(self.session, args)
+        except (CommandError, VFSError) as exc:
             print(f"Error: {exc}")
             return
         if output:
-            print(output)
+            print(output, end="" if output.endswith("\n") else "\n")
 
     def run_script(self, script_path: str) -> bool:
         """Run a script, echoing every command like a live dialog.

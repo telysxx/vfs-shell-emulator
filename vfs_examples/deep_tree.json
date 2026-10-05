@@ -1,0 +1,39 @@
+{
+  "name": "/",
+  "type": "dir",
+  "children": [
+    {
+      "name": "a",
+      "type": "dir",
+      "children": [
+        {
+          "name": "b",
+          "type": "dir",
+          "children": [
+            {
+              "name": "c",
+              "type": "dir",
+              "children": [
+                {
+                  "name": "target.txt",
+                  "type": "file",
+                  "content_base64": "ZGVlcCB0YXJnZXQK"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "file1.txt",
+      "type": "file",
+      "content_base64": "cm9vdCBmaWxlCg=="
+    },
+    {
+      "name": "empty",
+      "type": "dir",
+      "children": []
+    }
+  ]
+}

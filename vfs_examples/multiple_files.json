@@ -1,0 +1,88 @@
+{
+  "name": "/",
+  "type": "dir",
+  "children": [
+    {
+      "name": "bin",
+      "type": "dir",
+      "children": [
+        {
+          "name": "hello.txt",
+          "type": "file",
+          "content_base64": "ZWNoby1saWtlIGRlbW8K"
+        }
+      ]
+    },
+    {
+      "name": "etc",
+      "type": "dir",
+      "children": [
+        {
+          "name": "config.txt",
+          "type": "file",
+          "content_base64": "bW9kZT1zdHVkZW50CnZlcnNpb249MQo="
+        }
+      ]
+    },
+    {
+      "name": "home",
+      "type": "dir",
+      "children": [
+        {
+          "name": "student",
+          "type": "dir",
+          "children": [
+            {
+              "name": "notes.txt",
+              "type": "file",
+              "content_base64": "VU5JWC1saWtlIHNoZWxsIGVtdWxhdG9yCg=="
+            },
+            {
+              "name": "data.txt",
+              "type": "file",
+              "content_base64": "MTIzNDUK"
+            }
+          ]
+        },
+        {
+          "name": "guest.txt",
+          "type": "file",
+          "content_base64": "R3Vlc3QgZmlsZQo="
+        }
+      ]
+    },
+    {
+      "name": "empty",
+      "type": "dir",
+      "children": []
+    },
+    {
+      "name": "docs",
+      "type": "dir",
+      "children": [
+        {
+          "name": "report.txt",
+          "type": "file",
+          "content_base64": "Q29uZmlndXJhdGlvbiBtYW5hZ2VtZW50IHByb2plY3QK"
+        },
+        {
+          "name": "deep",
+          "type": "dir",
+          "children": [
+            {
+              "name": "level2",
+              "type": "dir",
+              "children": [
+                {
+                  "name": "target.txt",
+                  "type": "file",
+                  "content_base64": "RmluZCBtZQo="
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

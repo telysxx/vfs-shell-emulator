@@ -1,0 +1,6 @@
+# Stage 3: the minimal VFS (one file, one directory).
+ls
+tree
+pwd
+tree /home
+exit

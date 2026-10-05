@@ -1,0 +1,22 @@
+{
+  "name": "/",
+  "type": "dir",
+  "children": [
+    {
+      "name": "readme.txt",
+      "type": "file",
+      "content_base64": "TWluaW1hbCBWRlMK"
+    },
+    {
+      "name": "home",
+      "type": "dir",
+      "children": [
+        {
+          "name": "student.txt",
+          "type": "file",
+          "content_base64": "SGVsbG8gZnJvbSBWRlMhCg=="
+        }
+      ]
+    }
+  ]
+}
