@@ -204,3 +204,73 @@ class VFS:
             found.append(path)
         for child in node.children.values():
             self._find_in(child, join_path(path, child.name), name, found)
+
+    def _parent_and_name(self, path: str, cwd: str) -> tuple[Node, str]:
+        """Return the parent directory node and the last path component."""
+        normalized = self.normalize_path(path, cwd)
+        if normalized == ROOT_PATH:
+            raise VFSError("Operation not permitted on the VFS root.")
+        parent_path, _, name = normalized.rpartition(SEPARATOR)
+        parent = self.resolve(parent_path or ROOT_PATH)
+        if not parent.is_dir:
+            raise VFSError(f"Not a directory: {parent_path}")
+        return parent, name
+
+    def remove_dir(self, path: str, cwd: str = ROOT_PATH) -> None:
+        """Remove an empty directory from the in-memory VFS."""
+        parent, name = self._parent_and_name(path, cwd)
+        node = parent.children.get(name)
+        if node is None:
+            raise VFSError(f"No such directory: {path}")
+        if not node.is_dir:
+            raise VFSError(f"Not a directory: {path}")
+        if node.children:
+            raise VFSError(f"Directory not empty: {path}")
+        if self.normalize_path(path, cwd) == self.normalize_path(cwd):
+            raise VFSError("Cannot remove the current directory.")
+        del parent.children[name]
+
+    def copy(self, source: str, destination: str, cwd: str = ROOT_PATH) -> None:
+        """Copy a file or a whole directory inside the in-memory VFS.
+
+        If ``destination`` is an existing directory, the source is copied
+        into it under its own name, like the UNIX ``cp`` does.
+        """
+        source_node = self.resolve(source, cwd)
+        if source_node is self.root:
+            raise VFSError("Cannot copy the VFS root.")
+        self._check_not_into_itself(source, destination, cwd)
+        parent, name = self._parent_and_name(destination, cwd)
+        existing = parent.children.get(name)
+        if existing is None:
+            parent.children[name] = self._clone(source_node, name)
+            return
+        if not existing.is_dir:
+            raise VFSError(f"Destination already exists: {destination}")
+        if source_node.name in existing.children:
+            raise VFSError(f"Destination already contains: {source_node.name}")
+        existing.children[source_node.name] = self._clone(source_node)
+
+    def _check_not_into_itself(
+        self, source: str, destination: str, cwd: str
+    ) -> None:
+        """Forbid copying a directory into its own subtree."""
+        src = self.normalize_path(source, cwd)
+        dst = self.normalize_path(destination, cwd)
+        if self.resolve(src).is_dir and (dst + SEPARATOR).startswith(
+            src + SEPARATOR
+        ):
+            raise VFSError("Cannot copy a directory into itself.")
+
+    @staticmethod
+    def _clone(node: Node, name: str | None = None) -> Node:
+        """Return a deep copy of a node, optionally under a new name."""
+        return Node(
+            name=node.name if name is None else name,
+            kind=node.kind,
+            content=node.content,
+            children={
+                child.name: VFS._clone(child)
+                for child in node.children.values()
+            },
+        )

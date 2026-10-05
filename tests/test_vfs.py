@@ -92,5 +92,72 @@ class ReadOperationsTest(unittest.TestCase):
         )
 
 
+class ModificationTest(unittest.TestCase):
+    """Operations that change the in-memory VFS."""
+
+    def setUp(self):
+        """Load a fresh VFS for every test."""
+        self.vfs = load("multiple_files")
+
+    def test_remove_empty_directory(self):
+        """An empty directory disappears."""
+        self.vfs.remove_dir("/empty")
+        with self.assertRaises(VFSError):
+            self.vfs.resolve("/empty")
+
+    def test_remove_non_empty_fails(self):
+        """A non-empty directory is protected."""
+        with self.assertRaises(VFSError):
+            self.vfs.remove_dir("/home")
+
+    def test_remove_root_and_file_fail(self):
+        """The root and plain files cannot be removed by rmdir."""
+        with self.assertRaises(VFSError):
+            self.vfs.remove_dir("/")
+        with self.assertRaises(VFSError):
+            self.vfs.remove_dir("/home/guest.txt")
+
+    def test_remove_current_directory_fails(self):
+        """The directory we are standing in cannot be removed."""
+        with self.assertRaises(VFSError):
+            self.vfs.remove_dir(".", "/empty")
+
+    def test_copy_file_to_new_name(self):
+        """A file is copied under a new name."""
+        self.vfs.copy("/home/guest.txt", "/docs/guest_copy.txt")
+        self.assertEqual(
+            self.vfs.read_file("/docs/guest_copy.txt"), b"Guest file\n"
+        )
+
+    def test_copy_into_directory(self):
+        """Copying to an existing directory keeps the file name."""
+        self.vfs.copy("/home/guest.txt", "/empty")
+        data = self.vfs.read_file("/empty/guest.txt")
+        self.assertEqual(data, b"Guest file\n")
+
+    def test_copy_directory_is_deep(self):
+        """A copied directory is independent from the original."""
+        self.vfs.copy("/docs", "/docs2")
+        self.assertEqual(
+            self.vfs.find("/docs2", "target.txt"),
+            ["/docs2/deep/level2/target.txt"],
+        )
+        self.assertIsNot(
+            self.vfs.resolve("/docs2/report.txt"),
+            self.vfs.resolve("/docs/report.txt"),
+        )
+
+    def test_copy_errors(self):
+        """Missing source, existing target and self-copy are rejected."""
+        with self.assertRaises(VFSError):
+            self.vfs.copy("/missing", "/x")
+        with self.assertRaises(VFSError):
+            self.vfs.copy("/home/guest.txt", "/etc/config.txt")
+        with self.assertRaises(VFSError):
+            self.vfs.copy("/docs", "/docs/deep/inside")
+        with self.assertRaises(VFSError):
+            self.vfs.copy("/", "/x")
+
+
 if __name__ == "__main__":
     unittest.main()

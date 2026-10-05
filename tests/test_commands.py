@@ -94,5 +94,49 @@ class CoreCommandsTest(unittest.TestCase):
                     COMMANDS[command](self.session, args)
 
 
+class ModifyingCommandsTest(unittest.TestCase):
+    """rmdir and cp."""
+
+    def setUp(self):
+        """Start every test on a fresh VFS."""
+        self.session = make_session()
+
+    def test_rmdir_removes_empty_directory(self):
+        """An empty directory is removed from the listing."""
+        run(self.session, "rmdir", "/empty")
+        self.assertNotIn("empty/", run(self.session, "ls", "/"))
+
+    def test_rmdir_errors(self):
+        """Non-empty, missing and wrong-argument cases fail."""
+        with self.assertRaises(VFSError):
+            run(self.session, "rmdir", "/home")
+        with self.assertRaises(VFSError):
+            run(self.session, "rmdir", "/missing")
+        with self.assertRaises(CommandError):
+            run(self.session, "rmdir")
+
+    def test_cp_file(self):
+        """cp duplicates a file."""
+        run(self.session, "cp", "/home/guest.txt", "/etc/guest.txt")
+        self.assertEqual(
+            run(self.session, "cat", "/etc/guest.txt"), "Guest file\n"
+        )
+
+    def test_cp_uses_current_directory(self):
+        """Relative paths are resolved against the current directory."""
+        run(self.session, "cd", "/home")
+        run(self.session, "cp", "guest.txt", "copy.txt")
+        self.assertIn("copy.txt", run(self.session, "ls"))
+
+    def test_cp_errors(self):
+        """Missing source, existing target and bad usage fail."""
+        with self.assertRaises(VFSError):
+            run(self.session, "cp", "/missing", "/x")
+        with self.assertRaises(VFSError):
+            run(self.session, "cp", "/home/guest.txt", "/etc/config.txt")
+        with self.assertRaises(CommandError):
+            run(self.session, "cp", "/only-one")
+
+
 if __name__ == "__main__":
     unittest.main()

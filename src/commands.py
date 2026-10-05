@@ -68,6 +68,20 @@ def cmd_find(session: Session, args: list[str]) -> str:
     return "\n".join(session.vfs.find(start, name, session.cwd))
 
 
+def cmd_rmdir(session: Session, args: list[str]) -> str:
+    """Remove an empty directory."""
+    check_args(args, "rmdir <empty-directory>", 1)
+    session.vfs.remove_dir(args[0], session.cwd)
+    return ""
+
+
+def cmd_cp(session: Session, args: list[str]) -> str:
+    """Copy a file or a directory inside the VFS."""
+    check_args(args, "cp <source> <destination>", 2)
+    session.vfs.copy(args[0], args[1], session.cwd)
+    return ""
+
+
 def cmd_tree(session: Session, args: list[str]) -> str:
     """Print a subtree (service command, handy for demonstrations)."""
     check_args(args, "tree [path]", 0, 1)
@@ -89,6 +103,8 @@ COMMANDS: dict[str, CommandFunction] = {
     "du": cmd_du,
     "cat": cmd_cat,
     "find": cmd_find,
+    "rmdir": cmd_rmdir,
+    "cp": cmd_cp,
     "tree": cmd_tree,
     "pwd": cmd_pwd,
 }

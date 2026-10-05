@@ -1,0 +1,38 @@
+# Stage 5: rmdir and cp - all modes and errors.
+tree
+
+# rmdir: only empty directories can be removed.
+cp /empty /empty_copy
+ls /
+cd /empty_copy
+rmdir .
+cd /
+rmdir /empty_copy
+rmdir /empty
+ls /
+
+# cp: to a new name, into an existing directory, a whole directory.
+cp /home/guest.txt /etc/guest_copy.txt
+cat /etc/guest_copy.txt
+cp /home/guest.txt /docs
+ls /docs
+cd /home
+cp student/notes.txt notes_backup.txt
+ls
+cp /docs /docs_backup
+find / target.txt
+tree /docs_backup
+
+# Errors of cp.
+cp /home/guest.txt /etc/config.txt
+cp /docs /docs/deep/inside
+cp /missing /x
+cp /only_one_argument
+
+# Errors of rmdir.
+rmdir /home
+rmdir /home/guest.txt
+rmdir /missing
+rmdir /
+rmdir
+exit
