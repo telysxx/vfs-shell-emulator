@@ -1,0 +1,5 @@
+{
+  "vfs_path": "vfs_examples/multiple_files.json",
+  "prompt": "{vfs}:{cwd}$ ",
+  "startup_script": "scripts/emu/stage2.txt"
+}

@@ -1,0 +1,7 @@
+# Stage 2: startup script with comments.
+# Full-line comments and empty lines are skipped.
+
+ls            # an inline comment is ignored too
+cd $DEMO_DIR  # environment variables work in scripts
+cd
+exit
