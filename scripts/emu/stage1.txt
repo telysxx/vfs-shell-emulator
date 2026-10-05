@@ -1,0 +1,11 @@
+# Stage 1: REPL, environment variables and error handling.
+# DEMO_DIR is defined by scripts/os/stage1.sh.
+ls
+ls $DEMO_DIR
+cd ${DEMO_DIR}
+cd
+ls "dir with spaces" $UNDEFINED_VARIABLE   # undefined variable is empty
+cd one two
+unknown_command arg1 arg2
+ls "unbalanced quote
+exit
