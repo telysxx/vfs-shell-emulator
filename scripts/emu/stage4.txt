@@ -1,0 +1,31 @@
+# Stage 4: ls, cd, du, cat, find - all modes and errors.
+ls
+ls /home
+ls /home/student/notes.txt
+cd /home/student
+pwd
+ls ..
+ls ../..
+cd ..
+pwd
+cd student
+cd /
+du
+du /home
+du /home/student/data.txt
+cat /home/student/notes.txt
+cd /docs
+cat report.txt
+cat deep/level2/target.txt
+find target.txt
+find / target.txt
+find /home notes.txt
+find / no_such_name
+ls /no/such/dir
+cd /home/guest.txt
+cat /home
+cat /missing.txt
+du /missing
+find
+cat
+exit

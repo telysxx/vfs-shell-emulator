@@ -153,3 +153,54 @@ class VFS:
             lines.append(f"{prefix}{branch}{child.name}{suffix}")
             extension = TREE_GAP if is_last else TREE_PIPE
             self._tree_lines(child, prefix + extension, lines)
+
+    def read_file(self, path: str, cwd: str = ROOT_PATH) -> bytes:
+        """Return the content of a file."""
+        node = self.resolve(path, cwd)
+        if node.is_dir:
+            raise VFSError(f"Is a directory: {path}")
+        return node.content
+
+    def change_dir(self, path: str, cwd: str = ROOT_PATH) -> str:
+        """Validate a directory and return its absolute path."""
+        node = self.resolve(path, cwd)
+        if not node.is_dir:
+            raise VFSError(f"Not a directory: {path}")
+        return self.normalize_path(path, cwd)
+
+    def disk_usage(
+        self, path: str = CURRENT_DIR, cwd: str = ROOT_PATH
+    ) -> list[tuple[int, str]]:
+        """Return (size, path) for every directory below ``path``.
+
+        The requested path itself is always the last entry.
+        """
+        node = self.resolve(path, cwd)
+        entries: list[tuple[int, str]] = []
+        self._collect_usage(node, self.normalize_path(path, cwd), entries)
+        return entries
+
+    def _collect_usage(
+        self, node: Node, path: str, entries: list[tuple[int, str]]
+    ) -> None:
+        """Collect sizes of subdirectories first, then of ``node``."""
+        for child in node.children.values():
+            if child.is_dir:
+                self._collect_usage(child, join_path(path, child.name), entries)
+        entries.append((node.size, path))
+
+    def find(self, start: str, name: str, cwd: str = ROOT_PATH) -> list[str]:
+        """Find all entries below ``start`` with exactly this name."""
+        node = self.resolve(start, cwd)
+        found: list[str] = []
+        self._find_in(node, self.normalize_path(start, cwd), name, found)
+        return found
+
+    def _find_in(
+        self, node: Node, path: str, name: str, found: list[str]
+    ) -> None:
+        """Walk a subtree and collect paths of matching entries."""
+        if node.name == name:
+            found.append(path)
+        for child in node.children.values():
+            self._find_in(child, join_path(path, child.name), name, found)

@@ -51,5 +51,46 @@ class LoadingTest(unittest.TestCase):
         self.assertEqual(text.splitlines()[0], "/")
 
 
+class ReadOperationsTest(unittest.TestCase):
+    """Read-only operations."""
+
+    def setUp(self):
+        """Load a VFS with several files."""
+        self.vfs = load("multiple_files")
+
+    def test_read_file(self):
+        """File content is returned as bytes."""
+        data = self.vfs.read_file("/home/student/data.txt")
+        self.assertEqual(data, b"12345\n")
+
+    def test_read_directory_fails(self):
+        """A directory cannot be read as a file."""
+        with self.assertRaises(VFSError):
+            self.vfs.read_file("/home")
+
+    def test_change_dir(self):
+        """A valid directory gives its absolute path."""
+        self.assertEqual(self.vfs.change_dir("student", "/home"),
+                         "/home/student")
+
+    def test_change_dir_to_file_fails(self):
+        """cd into a file is an error."""
+        with self.assertRaises(VFSError):
+            self.vfs.change_dir("/home/guest.txt")
+
+    def test_disk_usage(self):
+        """Directories are listed first, the path itself is last."""
+        usage = self.vfs.disk_usage("/home")
+        self.assertEqual(usage[-1], (self.vfs.resolve("/home").size, "/home"))
+        self.assertEqual(usage[0][1], "/home/student")
+
+    def test_find(self):
+        """Find returns absolute paths of exact matches."""
+        self.assertEqual(
+            self.vfs.find("/", "target.txt"),
+            ["/docs/deep/level2/target.txt"],
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
